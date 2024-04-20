@@ -115,8 +115,9 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
+        full_list = args.split(" ")
         try:
-            class_name = args.split(" ")[0]
+            class_name = full_list[0]
         except IndexError:
             pass
         if not class_name:
@@ -130,18 +131,20 @@ class HBNBCommand(cmd.Cmd):
         storage.save()
         print(new_instance.id)
         """
-        full_list = args.split(" ")
         new_inst = eval(class_name)()
         for iter in range(1, len(full_list)):
             key, val = tuple(full_list[iter].split("="))
             if val.startswith('"'):
                 value = val.strip('"').replace("_", " ")
             else:
+                pass
+                """
                 try:
                     value = eval(value)
                 except Exception:
-                    print(f"Evaluaition of {value} failed")
+                    print(f"Evaluation of {value} failed")
                     pass
+                """
             if hasattr(new_inst, key):
                 setattr(new_inst, key, value)
         storage.new(new_inst)
