@@ -137,14 +137,11 @@ class HBNBCommand(cmd.Cmd):
             if val.startswith('"'):
                 value = val.strip('"').replace("_", " ")
             else:
-                pass
-                """
                 try:
-                    value = eval(value)
+                    value = eval(val)
                 except Exception:
                     print(f"Evaluation of {value} failed")
                     pass
-                """
             if hasattr(new_inst, key):
                 setattr(new_inst, key, value)
         storage.new(new_inst)
