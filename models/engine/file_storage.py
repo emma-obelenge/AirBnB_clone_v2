@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-"""This module defines a class to manage file storage for hbnb clone"""
+"""This module deifines a class to manage file storage for hbnb clone"""
+
+
 import json
 from models.base_model import BaseModel
 from models.user import User
@@ -8,6 +10,7 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
+
 
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
@@ -18,9 +21,9 @@ class FileStorage:
         """deletes obj from __objects if it is inside"""
         if obj is None:
             return
-        obj_to_del = f"(obj.__class__.__name__).(obj.id)"
+        obj_to_del = f"{obj.__class__.__name__}.{obj.id}"
         try:
-            FileStorage.__objects[obj_to_del]
+            del FileStorage.__objects[obj_to_del]
         except AttributeError:
             pass
         except KeyboardInterrupt:
@@ -70,7 +73,7 @@ class FileStorage:
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                    self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
         except json.decoder.JSONDecodeError:
