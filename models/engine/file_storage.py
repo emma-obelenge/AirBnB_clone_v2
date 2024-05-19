@@ -1,6 +1,15 @@
 #!/usr/bin/python3
-"""This module defines a class to manage file storage for hbnb clone"""
+"""This module deifines a class to manage file storage for hbnb clone"""
+
+
 import json
+from models.base_model import BaseModel
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
 
 
 class FileStorage:
@@ -9,22 +18,27 @@ class FileStorage:
     __objects = {}
 
     def delete(self, obj=None):
-        """deletes obj from ___objects if it's inside"""
-        if obj is not None:
-            key = obj.__class__.name__ + '.' + obj.id
-            if key in self.__objects:
-                del self.__objects[key]
-            self.save()
+        """deletes obj from __objects if it is inside"""
+        if obj is None:
+            return
+        obj_to_del = f"{obj.__class__.__name__}.{obj.id}"
+        try:
+            del FileStorage.__objects[obj_to_del]
+        except AttributeError:
+            pass
+        except KeyboardInterrupt:
+            pass
 
     def all(self, cls=None):
-        """Returns the list of objects of one type of class"""
-        if cls is not None:
-            new_dict = {}
-            for key, value in self.__objects.item():
-                if cls == value.__class__ or cls == value.__class__.__name__:
-                    new_dict[key] = value
-                return new_dict
-        return self.__objects
+        """Returns a dictionary of models currently in storage"""
+        if cls:
+            if isinstance(cls, str):
+                cls = globals().get(cls)
+            if cls and issubclass(cls, BaseModel):
+                cls_dict = {k: v for k,
+                            v in self.__objects.items() if isinstance(v, cls)}
+                return cls_dict
+        return FileStorage.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -61,4 +75,6 @@ class FileStorage:
                 for key, val in temp.items():
                     self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
+            pass
+        except json.decoder.JSONDecodeError:
             pass
