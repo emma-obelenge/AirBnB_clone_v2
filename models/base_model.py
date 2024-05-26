@@ -5,9 +5,8 @@ from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime, String
 
+
 Base = declarative_base()
-
-
 class BaseModel:
     """A base class for all hbnb models"""
     id = Column(String(60), primary_key=True, nullable=False)
@@ -16,19 +15,19 @@ class BaseModel:
 
     def __init__(self, *args, **kwargs):
         """Instatntiates a new model"""
-        if not kwargs:
-            self.id = str(uuid.uuid4())
+        time_format = "%Y-%m-%dT%H:%M:%S.%f"
+        if kwargs:
+            for key, val in kwargs.items():
+                if key in ["updated_at", "created_at"]:
+                    setattr(self, key, datetime.strptime(val, time_format))
+                elif key == "__class__":
+                    continue
+                else:
+                    setattr(self, key, val)
+        else:
+            self.id = str(uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
-        else:
-            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            del kwargs['__class__']
-            for key, value in kwargs.items():
-                if not hasattr(self, key):
-                    setattr(self, key, value)
             #self.__dict__.update(kwargs)
 
     def __str__(self):

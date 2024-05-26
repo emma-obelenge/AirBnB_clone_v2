@@ -2,7 +2,7 @@
 """ Console Module """
 import cmd
 import sys
-from models.base_model import BaseModel
+from models.base_model import BaseModel, Base
 from models.__init__ import storage
 from models.user import User
 from models.place import Place
@@ -219,11 +219,35 @@ class HBNBCommand(cmd.Cmd):
         print("Destroys an individual instance of a class")
         print("[Usage]: destroy <className> <objectId>\n")
 
-    def do_all(self, args):
+    def do_all(self, args=None):
         """ Shows all objects, or all objects of a class"""
         print_list = []
-
         if args:
+            if isinstance(args, str):
+                try:
+                    args = globals()[args]
+                except KeyError:
+                    pass
+            if issubclass(args, Base):
+                print_list = self.__session.query(args).all()
+        else:
+            for subclass in Base.__subclasses__():
+                print_list.extend(self.__session.query(subclass).all())
+        obj_dict = {}
+        for obj in print_list:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            try:
+                if obj.__class__.__name__ == 'State':
+                    del obj._sa_instance_state
+                    obj_dict[key] = obj
+                else:
+                    obj_dict[key] = obj
+            except Exception:
+                pass
+        return (obj_dict)
+
+"""        <<<<<<<<<    OLD UPDATE    >>>>>>>>>>>>>
+
             args = args.split(' ')[0]  # remove possible trailing args
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
@@ -232,11 +256,11 @@ class HBNBCommand(cmd.Cmd):
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
-            for k, v in storage._FileStorage__objects.items():
+            for k, v in storage._FileStorage__obj ects.items():
                 print_list.append(str(v))
 
         print(print_list)
-
+""""
     def help_all(self):
         """ Help information for the all command """
         print("Shows all objects, or all of a class")

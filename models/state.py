@@ -17,9 +17,7 @@ class State(BaseModel, Base):
     else:
         @property
         def cities(self):
-            """
-
-            """
+            """Returning the associated city list for the state instance"""
             import models
             from models.city import City
             city_list = []
