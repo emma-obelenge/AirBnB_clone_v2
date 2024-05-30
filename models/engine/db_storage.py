@@ -47,7 +47,7 @@ class DBStorage:
         """The init method for instantiation purpose"""
         username = getenv('HBNB_MYSQL_USER')
         password = getenv('HBNB_MYSQL_PWD')
-        host = getenv('HBNB_MYSQL__HOST')
+        host = getenv('HBNB_MYSQL_HOST')
         db_name = getenv('HBNB_MYSQL_DB')
 
         db_link = "mysql+mysqldb://{}:{}@{}/{}".format(username, password, host, db_name)
@@ -75,7 +75,7 @@ class DBStorage:
                 objs_bank.extend(self.__session.query(subclass).all())
         obj_dict = {}
         for obj in objs_bank:
-            key = "".format(obj.__class__.__name__, obj.id)
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
             try:
                 """if obj.__class__.__name__ == 'State':"""
                 del obj.sa_instance_state
