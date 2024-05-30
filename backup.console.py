@@ -140,7 +140,7 @@ class HBNBCommand(cmd.Cmd):
                 try:
                     value = eval(val)
                 except Exception:
-                    print("Evaluation of {} failed".format(value))
+                    print(f"Evaluation of {value} failed")
                     pass
             if hasattr(new_inst, key):
                 setattr(new_inst, key, value)
@@ -224,16 +224,44 @@ class HBNBCommand(cmd.Cmd):
         """ Shows all objects, or all objects of a class"""
         print_list = []
         if args:
+            if isinstance(args, str):
+                try:
+                    args = globals()[args]
+                except KeyError:
+                    pass
+            if issubclass(args, Base):
+                print_list = self.__session.query(args).all()
+        else:
+            for subclass in Base.__subclasses__():
+                print_list.extend(self.__session.query(subclass).all())
+        obj_dict = {}
+        for obj in print_list:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            try:
+                if obj.__class__.__name__ == 'State':
+                    del obj._sa_instance_state
+                    obj_dict[key] = obj
+                else:
+                    obj_dict[key] = obj
+            except Exception:
+                pass
+        return (obj_dict)
+
+"""        <<<<<<<<<    OLD UPDATE    >>>>>>>>>>>>>
+
+            args = args.split(' ')[0]  # remove possible trailing args
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            objs = storage.all(HBNBCommand.classes[args])
+            for k, v in storage._FileStorage__objects.items():
+                if k.split('.')[0] == args:
+                    print_list.append(str(v))
         else:
-            objs = storage.all()
-        for key, obj in objs.items():
-            print_list.append(str(obj))
-        print(print_list)
+            for k, v in storage._FileStorage__obj ects.items():
+                print_list.append(str(v))
 
+        print(print_list)
+""""
     def help_all(self):
         """ Help information for the all command """
         print("Shows all objects, or all of a class")
@@ -253,56 +281,86 @@ class HBNBCommand(cmd.Cmd):
 
     def do_update(self, args):
         """ Updates a certain object with new info """
-        args = args.partition(" ")
-        c_name = args[0]
-        c_id = args[2]
+        c_name = c_id = att_name = att_val = kwargs = ''
 
-        if not c_name:
+        # isolate cls from id/args, ex: (<cls>, delim, <id/args>)
+        args = args.partition(" ")
+        if args[0]:
+            c_name = args[0]
+        else:  # class name not present
             print("** class name missing **")
             return
-        if c_name not in HBNBCommand.classes:
+        if c_name not in HBNBCommand.classes:  # class name invalid
             print("** class doesn't exist **")
             return
-        if not c_id:
+
+        # isolate id from args
+        args = args[2].partition(" ")
+        if args[0]:
+            c_id = args[0]
+        else:  # id not present
             print("** instance id missing **")
             return
 
+        # generate key from class and id
         key = c_name + "." + c_id
-        obj = storage.all().get(key)
 
-        if not obj:
+        # determine if key is present
+        if key not in storage.all():
             print("** no instance found **")
             return
-        if '{' in c_id and '}' in c_id:
-            try:
-                updates = eval(c_id)
-                if not isinstance(updates, dict):
+
+        # first determine if kwargs or args
+        if '{' in args[2] and '}' in args[2] and type(eval(args[2])) is dict:
+            kwargs = eval(args[2])
+            args = []  # reformat kwargs into list, ex: [<name>, <value>, ...]
+            for k, v in kwargs.items():
+                args.append(k)
+                args.append(v)
+        else:  # isolate args
+            args = args[2]
+            if args and args[0] == '\"':  # check for quoted arg
+                second_quote = args.find('\"', 1)
+                att_name = args[1:second_quote]
+                args = args[second_quote + 1:]
+
+            args = args.partition(' ')
+
+            # if att_name was not quoted arg
+            if not att_name and args[0] != ' ':
+                att_name = args[0]
+            # check for quoted val arg
+            if args[2] and args[2][0] == '\"':
+                att_val = args[2][1:args[2].find('\"', 1)]
+
+            # if att_val was not quoted arg
+            if not att_val and args[2]:
+                att_val = args[2].partition(' ')[0]
+
+            args = [att_name, att_val]
+
+        # retrieve dictionary of current objects
+        new_dict = storage.all()[key]
+
+        # iterate through attr names and values
+        for i, att_name in enumerate(args):
+            # block only runs on even iterations
+            if (i % 2 == 0):
+                att_val = args[i + 1]  # following item is value
+                if not att_name:  # check for att_name
+                    print("** attribute name missing **")
+                    return
+                if not att_val:  # check for att_value
                     print("** value missing **")
                     return
-                for k, v in updates.items():
-                    if hasattr(obj, k):
-                        setattr(obj, k, v)
-            except Exception:
-                print("** value missing **")
-        else:
-            args = args[2].partition(" ")
-            att_name = args[0]
-            att_val = args[2]
+                # type cast as necessary
+                if att_name in HBNBCommand.types:
+                    att_val = HBNBCommand.types[att_name](att_val)
 
-            if not att_name:
-                print("** attribute name missing **")
-                return
+                # update dictionary with name, value pair
+                new_dict.__dict__.update({att_name: att_val})
 
-            if not att_val:
-                print("** value missing **")
-                return
-
-            if att_name in HBNBCommand.types:
-                att_val = HBNBCommand.types[att_name](att_val)
-
-            setattr(obj, att_name, att_val)
-
-        obj.save()
+        new_dict.save()  # save updates to file
 
     def help_update(self):
         """ Help information for the update class """

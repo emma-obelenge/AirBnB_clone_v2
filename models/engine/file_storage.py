@@ -21,7 +21,7 @@ class FileStorage:
         """deletes obj from __objects if it is inside"""
         if obj is None:
             return
-        obj_to_del = f"{obj.__class__.__name__}.{obj.id}"
+        obj_to_del = "{}.{}".format(obj.__class__.__name__, obj.id)
         try:
             del FileStorage.__objects[obj_to_del]
         except AttributeError:
