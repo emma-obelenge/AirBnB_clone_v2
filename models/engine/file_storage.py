@@ -37,6 +37,9 @@ class FileStorage:
             if cls and issubclass(cls, BaseModel):
                 cls_dict = {k: v for k,
                             v in self.__objects.items() if isinstance(v, cls)}
+                for k, v in cls_dict.items():
+                    if '_sa_instance_state' in v.__dict__:
+                        del v.__dict__['_sa_instance_state']
                 return cls_dict
         return FileStorage.__objects
 
