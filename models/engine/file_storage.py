@@ -35,10 +35,13 @@ class FileStorage:
             if isinstance(cls, str):
                 cls = globals().get(cls)
             if cls and issubclass(cls, BaseModel):
-                cls_dict = {k: v.to_dict() for k,
+                cls_dict = {k: v for k,
                             v in self.__objects.items() if isinstance(v, cls)}
+                for k, v in cls_dict.items():
+                    if '_sa_instance_state' in v.__dict__:
+                        del v.__dict__['_sa_instance_state']
                 return cls_dict
-        return {k: v.to_dict() for k, v in self._objects.items()}
+        return FileStorage.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
