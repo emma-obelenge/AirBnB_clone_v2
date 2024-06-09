@@ -41,7 +41,7 @@ class FileStorage:
                     if '_sa_instance_state' in v.__dict__:
                         del v.__dict__['_sa_instance_state']
                 return cls_dict
-        return FileStorage.__objects
+        return self.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
