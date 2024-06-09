@@ -52,7 +52,7 @@ class DBStorage:
 
         if DBStorage.__engine is None:
             db_link = "mysql+mysqldb://{}:{}@{}/{}".format(username, password, host, db_name)
-            self.__engine = create_engine(db_link, pool_pre_ping=True)
+            DBStorage.__engine = create_engine(db_link, pool_pre_ping=True)
         
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
@@ -81,10 +81,6 @@ class DBStorage:
                 """if obj.__class__.__name__ == 'State':"""
                 del obj.sa_instance_state
                 obj_dict[key] = obj
-                """
-                else:
-                    obj_dict[key] = obj
-                """
             except Exception:
                 pass
         return (obj_dict)
@@ -105,5 +101,4 @@ class DBStorage:
         """refreshes the database session for optimum performance"""
         Base.metadata.create_all(self.__engine)
         session_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(session_factory)
-        self.__session = Session()
+        DBStorage.__session = scoped_session(session_factory)
