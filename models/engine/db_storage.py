@@ -50,9 +50,9 @@ class DBStorage:
         host = getenv('HBNB_MYSQL_HOST')
         db_name = getenv('HBNB_MYSQL_DB')
 
-        if DBStorage.__engine is None:
+        if self.__engine is None:
             db_link = "mysql+mysqldb://{}:{}@{}/{}".format(username, password, host, db_name)
-            DBStorage.__engine = create_engine(db_link, pool_pre_ping=True)
+            self.__engine = create_engine(db_link, pool_pre_ping=True)
         
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
@@ -91,7 +91,8 @@ class DBStorage:
 
     def delete(self, obj=None):
         """deletes from the current db session obj if its not None"""
-        self.__session.delete(obj)
+        if obj != None:
+            self.__session.delete(obj)
 
     def save(self):
         """commit all changes of the db session (self.__session)"""
