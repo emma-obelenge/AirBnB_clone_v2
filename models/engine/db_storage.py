@@ -63,6 +63,8 @@ class DBStorage:
         on the class name (argument 'cls')
         """
         obj_dict = {}
+        objs_bank = []
+
         if cls:
             if isinstance(cls, str):
                 try:
@@ -74,15 +76,15 @@ class DBStorage:
         else:
             for subclass in Base.__subclasses__():
                 objs_bank.extend(self.__session.query(subclass).all())
-        obj_dict = {}
+
         for obj in objs_bank:
             key = "{}.{}".format(obj.__class__.__name__, obj.id)
             try:
-                """if obj.__class__.__name__ == 'State':"""
                 del obj.sa_instance_state
-                obj_dict[key] = obj
             except Exception:
                 pass
+            obj_dict[key] = obj
+
         return (obj_dict)
 
     def new(self, obj):
