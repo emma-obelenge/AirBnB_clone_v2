@@ -216,17 +216,15 @@ class HBNBCommand(cmd.Cmd):
         print_list = []
 
         if args:
-            args = args.split(' ')[0]  # remove possible trailing args
-            if args not in HBNBCommand.classes:
+            args = args.split()
+            class_name = args[0]
+            if class_name not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            objs = storage.all(HBNBCommand.classes[class_name])
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
-
+            objs = storage.all()
+        print_list = [str(obj) for obj in objs.values()]
         print(print_list)
 
     def help_all(self):
