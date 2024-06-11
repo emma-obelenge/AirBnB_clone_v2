@@ -62,17 +62,6 @@ class DBStorage:
         method created to query on the current database session based
         on the class name (argument 'cls')
         """
-        """iobjs_dict = {}
-        if cls:
-            objs = self.__session.query(cls).all()
-        else:
-            for subclass in Base.__subclasses__():
-                objs = self.__session.query(subclass).all()
-                for obj in objs:
-                    key = f"{obj.__class__.__name__}.{obj.id}"
-                    obj_dict[key] = obj
-        return obj_dict
-        """
         obj_dict = {}
         if cls:
             if isinstance(cls, str):
@@ -81,20 +70,20 @@ class DBStorage:
                 except KeyError:
                     pass
             if issubclass(cls, Base):
-                objs = self.__session.query(cls).all()
-                print(f"Debug Queried {cls.__name__}: {objs}"
-                for obj in objs:
-                    key = f"{obj.__class__.__name__}.{obj.id}"
-                    obj_dict[key] = obj
+                objs_bank = self.__session.query(cls).all()
         else:
             for subclass in Base.__subclasses__():
-            objs = self.__session.query(subclass).all()
-                print(f"Queried {subclass.__name__}: {objs}")  # Debugging print
-                for obj in objs:
-                    key = f"{obj.__class__.__name__}.{obj.id}"
-                    obj_dict[key] = obj
-        print(f"Final obj_dict: {obj_dict}")  # Debugging print
-        return obj_dict
+                objs_bank.extend(self.__session.query(subclass).all())
+        obj_dict = {}
+        for obj in objs_bank:
+            key = "{}.{}".format(obj.__class__.__name__, obj.id)
+            try:
+                """if obj.__class__.__name__ == 'State':"""
+                del obj.sa_instance_state
+                obj_dict[key] = obj
+            except Exception:
+                pass
+        return (obj_dict)
 
     def new(self, obj):
         """ would add the obj to the current db session (self.__session)"""
