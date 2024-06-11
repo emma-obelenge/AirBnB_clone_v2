@@ -70,7 +70,7 @@ class DBStorage:
                 try:
                     cls = globals()[cls]
                 except KeyError:
-                    pass
+                    return obj_dict
             if issubclass(cls, Base):
                 objs_bank = self.__session.query(cls).all()
         else:
@@ -81,7 +81,7 @@ class DBStorage:
             key = "{}.{}".format(obj.__class__.__name__, obj.id)
             try:
                 del obj.sa_instance_state
-            except Exception:
+            except AttributeError:
                 pass
             obj_dict[key] = obj
 
