@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-
-# web_flask/__init__.py
+"""creating the app instance"""
 
 from flask import Flask
 
