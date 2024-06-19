@@ -3,7 +3,7 @@
 A script that starts a Flask web application:
 """
 
-from web_flask import app
+from flask import *
 
 
 @app.route('/', strict_slashes=False)
