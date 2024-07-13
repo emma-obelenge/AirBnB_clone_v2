@@ -6,7 +6,7 @@ archive to the web servers
 
 from fabric.api import put, run, env
 from os.path import exists
-env.hosts = ['54.165.210.12', '34.232.70.20']
+env.hosts = ['35.153.78.102', '54.160.91.90']
 env.user = 'ubuntu'
 
 
