@@ -56,7 +56,7 @@ class DBStorage:
         
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
-    
+   
     def all(self, cls=None):
         """
         method created to query on the current database session based
@@ -79,13 +79,25 @@ class DBStorage:
 
         for obj in objs_bank:
             key = "{}.{}".format(obj.__class__.__name__, obj.id)
-            try:
-                del obj.sa_instance_state
-            except AttributeError:
-                pass
-            obj_dict[key] = obj
+            #try:
+                #print("Entered sa_instance_state area")
+                #del obj.sa_instance_state
+            #except AttributeError:
+                #print("couldn't delete sa_instace_state")
+                #pass
+            obj_dict[key] = self.obj_to_dict(obj)
 
         return (obj_dict)
+
+    def obj_to_dict(self, obj):
+        """Converts SQLAlchemy ORM object to dictionary, excluding internal attributes.
+        """
+        if isinstance(obj, list):
+            return [self.obj_to_dict(o) for o in obj]
+
+        obj_dict = obj.__dict__.copy()
+        obj_dict.pop('_sa_instance_state', None)
+        return obj_dict
 
     def new(self, obj):
         """ would add the obj to the current db session (self.__session)"""
